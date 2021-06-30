@@ -13,10 +13,26 @@ exports.getPosts = async (req, res) => {
 };
 
 exports.getComments = async (req, res) => {
+  let arr = [];
   await axios.get("http://localhost:7000/getPosts")
     .then((data) => {
-      console.log(data);
-      return res.status(200).send("Comments sent");
+      console.log(data.data[0].id);
+      for (k in data.data) {
+        axios.get(`https://jsonplaceholder.typicode.com/posts/${data.data[k].id}/comments`)
+          .then((comments) => {
+            console.log("Getting comments");
+            for ( i in comments.data ) {
+              let cms = comments.data[i].body;
+              arr.push(cms);
+            }
+          })
+          .catch((err) => {
+            console.error("Error getting comments", err);
+            return res.status(500).send("Error getting comments");
+          });
+      }
+      console.log(arr);
+      return res.status(200).send(arr);
     })
     .catch((error) => {
       console.error("Error reteriving comments", error);
